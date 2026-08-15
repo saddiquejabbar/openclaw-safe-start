@@ -8,6 +8,17 @@ fail() {
   exit 1
 }
 
+scan_pattern() {
+  local pattern="$1"
+  if command -v rg >/dev/null 2>&1; then
+    rg -n --hidden --glob '!.git/**' --glob '!tests/test-secrets.sh' \
+      --glob '!docs/CRITIQUE_PROMPT.md' -- "$pattern" "$ROOT"
+  else
+    grep -RInE --exclude-dir=.git --exclude='test-secrets.sh' \
+      --exclude='CRITIQUE_PROMPT.md' -- "$pattern" "$ROOT"
+  fi
+}
+
 if find "$ROOT" -type f \
   \( -name '.env' -o -name '.env.*' -o -name 'auth.json' \
      -o -name 'openclaw.json' -o -name '*.pem' -o -name '*.p12' \
@@ -33,14 +44,12 @@ patterns=(
 )
 
 for pattern in "${patterns[@]}"; do
-  if rg -n --hidden --glob '!.git/**' --glob '!tests/test-secrets.sh' \
-      --glob '!docs/CRITIQUE_PROMPT.md' -- "$pattern" "$ROOT"; then
+  if scan_pattern "$pattern"; then
     fail "High-confidence secret pattern found"
   fi
 done
 
-if rg -n --hidden --glob '!.git/**' --glob '!tests/test-secrets.sh' -- \
-    '/Users/[^/[:space:]]+|[A-Za-z]:\\Users\\[^\\[:space:]]+' "$ROOT"; then
+if scan_pattern '/Users/[^/[:space:]]+|[A-Za-z]:\\Users\\[^\\[:space:]]+'; then
   fail "Personal absolute user path is present"
 fi
 

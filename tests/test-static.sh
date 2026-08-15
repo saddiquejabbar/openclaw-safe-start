@@ -11,6 +11,26 @@ fail() {
   exit 1
 }
 
+search_quiet() {
+  local pattern="$1"
+  shift
+  if command -v rg >/dev/null 2>&1; then
+    rg -q -- "$pattern" "$@"
+  else
+    grep -Eq -- "$pattern" "$@"
+  fi
+}
+
+search_lines() {
+  local pattern="$1"
+  shift
+  if command -v rg >/dev/null 2>&1; then
+    rg -n -- "$pattern" "$@"
+  else
+    grep -En -- "$pattern" "$@"
+  fi
+}
+
 bash -n "$MAC"
 
 dry_output="$("$MAC" --dry-run)"
@@ -35,32 +55,32 @@ claude_hash="$(sed -n 's/^CLAUDE_CODE_TARBALL_SHA256=//p' "$PINS")"
 [[ "$claude_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || fail "Invalid Claude Code version"
 [[ "$claude_hash" =~ ^[0-9a-f]{64}$ ]] || fail "Invalid Claude Code package checksum"
 
-rg -q 'scripts/install-cli\.sh' "$MAC" || fail "Mac does not use the local-prefix installer"
-rg -q 'scripts/install\.ps1' "$WIN" || fail "Windows does not use the official PowerShell installer"
-rg -q 'gateway\.tailscale\.mode.*serve' "$MAC" || fail "Mac does not configure Tailscale Serve"
-rg -q 'gateway\.tailscale\.mode.*serve' "$WIN" || fail "Windows does not configure Tailscale Serve"
-rg -q 'auth-choice.*openai' "$MAC" || fail "Mac lacks ChatGPT subscription OAuth onboarding"
-rg -q 'auth-choice.*openai' "$WIN" || fail "Windows lacks ChatGPT subscription OAuth onboarding"
-rg -q 'auth-choice.*anthropic-cli' "$MAC" || fail "Mac lacks Claude Code subscription onboarding"
-rg -q 'auth-choice.*anthropic-cli' "$WIN" || fail "Windows lacks Claude Code subscription onboarding"
-rg -q 'auth login.*--claudeai' "$MAC" || fail "Mac does not force Claude subscription login"
-rg -q 'auth.*login.*claudeai' "$WIN" || fail "Windows does not force Claude subscription login"
-rg -q 'security audit.*--deep' "$MAC" || fail "Mac lacks a deep security audit"
-rg -q 'security.*audit.*deep' "$WIN" || fail "Windows lacks a deep security audit"
-rg -q 'allowInsecureAuth.*false' "$MAC" || fail "Mac does not disable insecure Control UI auth"
-rg -q 'allowInsecureAuth.*false' "$WIN" || fail "Windows does not disable insecure Control UI auth"
-rg -q 'tools\.profile.*messaging' "$MAC" || fail "Mac lacks the beginner messaging-only tool profile"
-rg -q 'tools\.profile.*messaging' "$WIN" || fail "Windows lacks the beginner messaging-only tool profile"
+search_quiet 'scripts/install-cli\.sh' "$MAC" || fail "Mac does not use the local-prefix installer"
+search_quiet 'scripts/install\.ps1' "$WIN" || fail "Windows does not use the official PowerShell installer"
+search_quiet 'gateway\.tailscale\.mode.*serve' "$MAC" || fail "Mac does not configure Tailscale Serve"
+search_quiet 'gateway\.tailscale\.mode.*serve' "$WIN" || fail "Windows does not configure Tailscale Serve"
+search_quiet 'auth-choice.*openai' "$MAC" || fail "Mac lacks ChatGPT subscription OAuth onboarding"
+search_quiet 'auth-choice.*openai' "$WIN" || fail "Windows lacks ChatGPT subscription OAuth onboarding"
+search_quiet 'auth-choice.*anthropic-cli' "$MAC" || fail "Mac lacks Claude Code subscription onboarding"
+search_quiet 'auth-choice.*anthropic-cli' "$WIN" || fail "Windows lacks Claude Code subscription onboarding"
+search_quiet 'auth login.*--claudeai' "$MAC" || fail "Mac does not force Claude subscription login"
+search_quiet 'auth.*login.*claudeai' "$WIN" || fail "Windows does not force Claude subscription login"
+search_quiet 'security audit.*--deep' "$MAC" || fail "Mac lacks a deep security audit"
+search_quiet 'security.*audit.*deep' "$WIN" || fail "Windows lacks a deep security audit"
+search_quiet 'allowInsecureAuth.*false' "$MAC" || fail "Mac does not disable insecure Control UI auth"
+search_quiet 'allowInsecureAuth.*false' "$WIN" || fail "Windows does not disable insecure Control UI auth"
+search_quiet 'tools\.profile.*messaging' "$MAC" || fail "Mac lacks the beginner messaging-only tool profile"
+search_quiet 'tools\.profile.*messaging' "$WIN" || fail "Windows lacks the beginner messaging-only tool profile"
 
-if rg -n 'openai-api-key|anthropic-api-key|auth[[:space:]]+login.*--console' "$MAC" "$WIN"; then
+if search_lines 'openai-api-key|anthropic-api-key|auth[[:space:]]+login.*--console' "$MAC" "$WIN"; then
   fail "An API-key or Anthropic Console billing path is present in primary setup"
 fi
 
-if rg -n 'tailscale[[:space:]]+funnel|gateway\.tailscale\.mode[[:space:]]+funnel' "$MAC" "$WIN"; then
+if search_lines 'tailscale[[:space:]]+funnel|gateway\.tailscale\.mode[[:space:]]+funnel' "$MAC" "$WIN"; then
   fail "A public Tailscale Funnel path is present"
 fi
 
-if rg -n 'curl[^\n]*\|[[:space:]]*(ba)?sh|iwr[^\n]*\|[[:space:]]*iex' "$MAC" "$WIN"; then
+if search_lines 'curl[^\n]*\|[[:space:]]*(ba)?sh|iwr[^\n]*\|[[:space:]]*iex' "$MAC" "$WIN"; then
   fail "A download-to-shell pipeline bypasses checksum verification"
 fi
 
