@@ -598,8 +598,8 @@ main() {
     esac
   done
   load_pins
-  [[ "$(uname -s)" == "Darwin" ]] || die "This script is for macOS. Use install-windows.ps1 on Windows."
   if [[ "$DRY_RUN" == "1" ]]; then print_plan; exit 0; fi
+  [[ "$(uname -s)" == "Darwin" ]] || die "This script is for macOS. Use install-windows.ps1 on Windows."
   if [[ "$VERIFY_ONLY" == "1" ]]; then
     download_verified_installer \
       "https://raw.githubusercontent.com/openclaw/openclaw/$OPENCLAW_COMMIT/scripts/install-cli.sh" \
