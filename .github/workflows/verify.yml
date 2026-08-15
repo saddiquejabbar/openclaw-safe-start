@@ -45,4 +45,4 @@ jobs:
         shell: powershell
         run: |
           Install-Module PSScriptAnalyzer -RequiredVersion 1.25.0 -Scope CurrentUser -Force
-          Invoke-ScriptAnalyzer -Path .\install-windows.ps1 -Recurse -EnableExit
+          Invoke-ScriptAnalyzer -Path .\install-windows.ps1 -Settings .\.psscriptanalyzer.psd1 -Recurse -EnableExit
