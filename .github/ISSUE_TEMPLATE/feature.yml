@@ -1,0 +1,27 @@
+name: Feature request
+description: Suggest a focused beginner-safety or usability improvement.
+title: "[Idea]: "
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: New providers, channels, tools, and network exposure require a threat-model update.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Beginner problem
+      description: What blocks or confuses a first-time user today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Smallest useful change
+    validations:
+      required: true
+  - type: textarea
+    id: risk
+    attributes:
+      label: Security, privacy, and setup-time impact
+    validations:
+      required: true

@@ -1,0 +1,59 @@
+name: Bug report
+description: Report a reproducible non-security defect without secrets.
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not include passwords, tokens, account names, personal paths, chat content, local state, screenshots with personal information, or unredacted logs. Security reports belong in a private Security Advisory.
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - macOS Apple Silicon
+        - macOS Intel
+        - Windows 11 x64
+        - Windows 11 ARM64
+        - Other or unsupported
+    validations:
+      required: true
+  - type: dropdown
+    id: provider
+    attributes:
+      label: Subscription path
+      options:
+        - ChatGPT subscription
+        - Claude Code subscription
+        - Not reached yet
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Redacted reproduction steps
+      description: Use placeholders for all identifying or sensitive values.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior and redacted error
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety confirmation
+      options:
+        - label: I removed all secrets, personal data, account identifiers, and private paths.
+          required: true
+        - label: This is not a vulnerability or leaked credential.
+          required: true

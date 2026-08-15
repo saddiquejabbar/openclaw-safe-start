@@ -1,0 +1,45 @@
+# Never commit local OpenClaw, provider, or chat-service state.
+.openclaw/
+.claude/
+.codex/
+
+# Secrets and environment files.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*credentials*
+*secret*
+*token*
+!tests/test-secrets.sh
+auth.json
+openclaw.json
+
+# Logs, transcripts, databases, and backups may contain sensitive content.
+*.log
+*.sqlite
+*.sqlite-*
+*.db
+*.bak
+*.backup
+transcripts/
+sessions/
+memory/
+
+# Downloaded packages and temporary output.
+*.tgz
+*.tar.gz
+*.zip
+tmp/
+dist/
+
+# Operating system and editor files.
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

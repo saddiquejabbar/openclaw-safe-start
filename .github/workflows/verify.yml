@@ -1,0 +1,48 @@
+name: verify
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Static safety tests
+        run: |
+          ./tests/test-static.sh
+          ./tests/test-secrets.sh
+      - name: Reproduce upstream pins
+        run: ./tools/verify-pins.sh
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Syntax and dry run
+        run: |
+          bash -n install-mac.sh tools/verify-pins.sh
+          ./install-mac.sh --dry-run
+      - name: Verify downloads without executing them
+        run: ./install-mac.sh --verify
+
+  windows-powershell-51:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Windows dry run
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File .\install-windows.ps1 -DryRun
+      - name: Verify downloads without executing them
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File .\install-windows.ps1 -Verify
+      - name: PowerShell static analysis
+        shell: powershell
+        run: |
+          Install-Module PSScriptAnalyzer -RequiredVersion 1.25.0 -Scope CurrentUser -Force
+          Invoke-ScriptAnalyzer -Path .\install-windows.ps1 -Recurse -EnableExit
